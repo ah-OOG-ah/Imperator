@@ -46,8 +46,8 @@ val dlMetaManifest = tasks.register<Download>("dlMetaManifest") {
 val dlManifest7p10 = tasks.register<Download>("dlManifest7.10") {
     dependsOn(dlMetaManifest)
     val metaMF = dlMetaManifest.get().outputFiles[0]
-    val metaMFdeser = Json.decodeFromStream<MetaMF>(metaMF.inputStream())
-    val meta7p10 = metaMFdeser.versions.find { it.id == "1.7.10" }
+    val metaMFObj = Json.decodeFromStream<MetaMF>(metaMF.inputStream())
+    val meta7p10 = metaMFObj.versions.find { it.id == "1.7.10" }
 
     src(meta7p10!!.url)
     dest(cacheDir.file("assets/indexes/1.7.10.json"))
@@ -55,8 +55,22 @@ val dlManifest7p10 = tasks.register<Download>("dlManifest7.10") {
     description = "Download the manifest JSON for r7.10."
 }
 
-tasks.run {
+// Now that we have the manifest, we download EVERYTHING ELSE
+@OptIn(ExperimentalSerializationApi::class)
+val dlClient7p10 = tasks.register<Download>("dlClient7p10") {
+    description = "Download everything needed to launch the game."
+
     dependsOn(dlManifest7p10)
+    val versionMF = dlManifest7p10.get().outputFiles[0]
+    val versionMFObj = Json.decodeFromStream<VersionMF>(versionMF.inputStream())
+
+    src(versionMFObj.downloads.client.url)
+    dest(cacheDir.file("libraries/client.jar"))
+    overwrite(false)
+}
+
+tasks.run {
+    dependsOn(dlClient7p10)
 }
 
 tasks.test {
