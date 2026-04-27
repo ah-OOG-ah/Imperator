@@ -71,6 +71,13 @@ val dlClient7p10 = tasks.register<Download>("dlClient7p10") {
 
 tasks.run {
     dependsOn(dlClient7p10)
+    val versionMF = dlManifest7p10.get().outputFiles[0]
+    val versionMFObj = Json.decodeFromStream<VersionMF>(versionMF.inputStream())
+
+    classpath += cacheDir.dir("libraries").asFileTree
+    workingDir = projectDir.resolve("run/client")
+    if (!workingDir.isDirectory) mkdir(workingDir)
+    args(versionMFObj.mainClass, versionMFObj.minecraftArguments)
 }
 
 tasks.test {
