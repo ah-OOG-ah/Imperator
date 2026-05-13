@@ -107,6 +107,7 @@ val dlClient7p10 = tasks.register("dlClient7p10") {
 
 tasks.run.configure {
     dependsOn(dlClient7p10)
+    jvmArgs = jvmArgs + ("--enable-native-access=ALL-UNNAMED")
 
     doFirst {
         val versionMFObj = Json.decodeFromStream<VersionMF>(manifest7p10.inputStream())
