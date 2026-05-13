@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public class Main {
     static void main(String[] args) throws Throwable {
-        IO.println("Hello, World!");
+        IO.println(System.getProperty("java.class.path"));
         if (args.length < 2) {
             throw new IllegalArgumentException("Did not receive launch class and args. Terminating.");
         }
@@ -30,8 +30,10 @@ public class Main {
 
         final var main = Class.forName(args[0]);
         final var lookup = MethodHandles.publicLookup();
-        final var entrypoint = lookup.findStatic(main, "main", methodType(Void.class, String[].class));
+        final var entrypoint = lookup.unreflect(main.getMethod("main", String[].class));
 
-        entrypoint.invokeExact((Object) passthroughArgs);
+        // invokeExact *must* recieve this as a String[], not casting to Object!
+        //noinspection ConfusingArgumentToVarargsMethod
+        entrypoint.invokeExact(passthroughArgs);
     }
 }
